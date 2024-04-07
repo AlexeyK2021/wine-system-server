@@ -1,29 +1,32 @@
 import uvicorn
-from fastapi import FastAPI, Body, WebSocket
+from fastapi import FastAPI
 from fastapi.responses import JSONResponse, Response
 
 from config import API_PORT
+from db.db_manager import get_user_by_login
 
 app = FastAPI()
 
 
-def server_log(tag, msg):
+def user_log(tag, msg):
     print(f"############-- {tag}:{msg} --############ ")
 
 
 @app.get("/api/auth/{login}&{passwd}")
 async def auth(login, passwd):
-    server_log(tag="Login", msg=f"Login={login}, Passwd={passwd}")
-    if (login == "admin" and passwd == "8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918") or (
-            login == "alexey" and passwd == "d217e1716cb7b36f8be65117f625a1e39d22fd585528632391bb74310a4f255d"):
+    user = get_user_by_login(login)
+    if user.password == passwd:
+        user_log(tag="Вход", msg=f"Login={login}, Passwd={passwd}")
         return Response(status_code=200)
     else:
-        return Response(status_code=403)
+        user_log(tag="Неудачная попытка входа", msg=f"Login={login}, Passwd={passwd}")
+        return Response(status_code=401)
 
 
 @app.get("/api/user/check/{login}")
 async def check_admin(login):
-    if login == "admin":
+    user = get_user_by_login(login)
+    if user.type.is_admin:
         return JSONResponse(status_code=200, content={"admin": True})
     else:
         return JSONResponse(status_code=200, content={"admin": False})
