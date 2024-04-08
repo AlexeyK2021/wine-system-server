@@ -3,7 +3,7 @@ from fastapi import FastAPI
 from fastapi.responses import JSONResponse, Response
 
 from config import API_PORT
-from db.db_manager import get_user_by_login
+from db.db_manager import get_passwd_by_login, get_status_by_login
 
 app = FastAPI()
 
@@ -14,8 +14,8 @@ def user_log(tag, msg):
 
 @app.get("/api/auth/{login}&{passwd}")
 async def auth(login, passwd):
-    user = get_user_by_login(login)
-    if user.password == passwd:
+    password = get_passwd_by_login(login)
+    if password == passwd:
         user_log(tag="Вход", msg=f"Login={login}, Passwd={passwd}")
         return Response(status_code=200)
     else:
@@ -25,8 +25,8 @@ async def auth(login, passwd):
 
 @app.get("/api/user/check/{login}")
 async def check_admin(login):
-    user = get_user_by_login(login)
-    if user.type.is_admin:
+    is_admin = get_status_by_login(login)
+    if is_admin:
         return JSONResponse(status_code=200, content={"admin": True})
     else:
         return JSONResponse(status_code=200, content={"admin": False})
