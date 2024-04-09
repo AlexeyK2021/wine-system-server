@@ -3,7 +3,7 @@ from fastapi import FastAPI
 from fastapi.responses import JSONResponse, Response
 
 from config import API_PORT
-from db.db_manager import get_passwd_by_login, get_status_by_login
+from db import db_manager
 
 app = FastAPI()
 
@@ -14,7 +14,9 @@ def user_log(tag, msg):
 
 @app.get("/api/auth/{login}&{passwd}")
 async def auth(login, passwd):
-    password = get_passwd_by_login(login)
+    password = db_manager.get_passwd_by_login(login)
+    if password is None:
+        return Response(status_code=500)
     if password == passwd:
         user_log(tag="Вход", msg=f"Login={login}, Passwd={passwd}")
         return Response(status_code=200)
@@ -25,11 +27,20 @@ async def auth(login, passwd):
 
 @app.get("/api/user/check/{login}")
 async def check_admin(login):
-    is_admin = get_status_by_login(login)
+    is_admin = db_manager.get_status_by_login(login)
     if is_admin:
         return JSONResponse(status_code=200, content={"admin": True})
     else:
         return JSONResponse(status_code=200, content={"admin": False})
+
+
+@app.get("/api/process/temp/{tank_id}")
+async def get_current_temp(tank_id):
+    temp, datetime = db_manager.get_current_temp(tank_id)
+    return JSONResponse(status_code=200, content={
+        "datetime": datetime.isoformat(),
+        "value": temp
+    })
 
 
 # @app.post("/api/auth/")
