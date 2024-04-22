@@ -1,5 +1,6 @@
-pymysql
-SQLAlchemy
 fastapi
 uvicorn
 websockets
+opcua
+opcua-client
+mariadb

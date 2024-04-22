@@ -3,7 +3,7 @@ from fastapi import FastAPI
 from fastapi.responses import JSONResponse, Response
 
 from config import API_PORT
-from db import db_manager
+import db_manager
 
 app = FastAPI()
 
@@ -60,4 +60,4 @@ async def get_current_temp(tank_id):
 
 
 if __name__ == "__main__":
-    uvicorn.run(app, host="127.0.0.1", port=API_PORT, log_level="info")
+    uvicorn.run(app, host="0.0.0.0", port=API_PORT, log_level="info")
