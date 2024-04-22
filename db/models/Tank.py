@@ -23,8 +23,8 @@ class Tank:
         self.he_pump = he_pump
         self.output_valve = output_valve
         self.co2_valve = co2_valve
-        self.he_output_valve = he_output_valve
         self.he_input_valve = he_input_valve
+        self.he_output_valve = he_output_valve
 
     def __str__(self):
         return (f"Id={self.id}; name={self.name};\n"

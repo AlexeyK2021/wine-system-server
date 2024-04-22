@@ -1,28 +1,38 @@
 import enum
-
-from db.models.Tank import Tank
-from ius import opcua_manager
+from ius import opcua_manager, db_manager
 
 
 class State(enum.Enum):
-    EMPTY_TANK_STATE = 0
+    EMPTY_TANK_STATE = "Инициализация емкости"
     # Состояния для бурного брожения
-    FILL_FF_TANK = 1
-    PRE_FERMENTATION = 2
-    FAST_FERMENTATION = 3
-    DRAIN_FF_TANK = 4
+    FILL_FF_TANK = "Наполнение танка бурного брожения"
+    PRE_FERMENTATION = "Забраживание"
+    FAST_FERMENTATION = "Бурное брожение"
+    DRAIN_FF_TANK = "Опорожнение танка бурного брожение"
 
     # Состояния для тихого брожения
-    FILL_SF_TANK = 1
-    SLOW_FERMENTATION = 2
-    DRAIN_SF_TANK = 3
+    FILL_SF_TANK = "Наполнение танка тихого брожения"
+    SLOW_FERMENTATION = "Тихое брожение"
+    DRAIN_SF_TANK = "Опорожнение танка бурного брожение"
 
 
-def write_actuator_log(actuator, new_state):
-    pass
+def write_actuator_log(actuator, state):
+    db_manager.write_actuator_log(actuator.id, state)
 
 
-def init_tank(tank: Tank):
+def write_sensor_log(sensor, value):
+    db_manager.write_sensor_log(sensor.id, value)
+
+
+def start_process_log(tank):
+    db_manager.write_start_process_log(tank.id, tank.curr_state.value)
+
+
+def end_process_log(tank, result):
+    db_manager.write_end_process_log(tank.id, 1)
+
+
+def init_tank(tank):
     input_valve = tank.input_valve
     he_pump = tank.he_pump
     he_input_valve = tank.he_input_valve
@@ -48,7 +58,7 @@ def init_tank(tank: Tank):
     write_actuator_log(co2_valve, True)
 
 
-def check_init(tank: Tank):
+def check_init(tank):
     input_valve_state = opcua_manager.get_value(tank.input_valve.ip, tank.input_valve.port,
                                                 tank.input_valve.state_node_id)
     he_pump_state = opcua_manager.get_value(tank.he_pump.ip, tank.he_pump.port, tank.he_pump.state_node_id)
@@ -69,31 +79,37 @@ def check_init(tank: Tank):
     )
 
 
-def fill_tank(tank: Tank):
+def fill_tank(tank):
     opcua_manager.set_value(tank.input_valve.ip, tank.input_valve.port, tank.input_valve.cmnd_node_id, True)
     write_actuator_log(tank.input_valve, True)
 
 
-def end_fill_tank(tank: Tank):
+def end_fill_tank(tank):
     opcua_manager.set_value(tank.input_valve.ip, tank.input_valve.port, tank.input_valve.cmnd_node_id, False)
     write_actuator_log(tank.input_valve, False)
 
 
 def check_sensor(sensor):
-    return opcua_manager.get_value(sensor.ip, sensor.port, sensor.cmnd_node_id)
+    value = opcua_manager.get_value(sensor.ip, sensor.port, sensor.node_id)
+    write_sensor_log(sensor, value)
+    return value
 
 
-def control(self, tank):
+def control(tank):
     if tank.type_id == 1:
         if tank.curr_state == State.EMPTY_TANK_STATE:
+            start_process_log(tank)
             init_tank(tank)
             if check_init(tank):
+                end_process_log(tank, True)
                 tank.curr_state = State.FILL_FF_TANK
 
         elif tank.curr_state == State.FILL_FF_TANK:
+            start_process_log(tank)
             fill_tank(tank)
             if check_sensor(tank.down_level_sensor) and check_sensor(tank.up_level_sensor):
                 end_fill_tank(tank)
+                end_process_log(tank, True)
                 tank.curr_state = State.PRE_FERMENTATION
 
         elif tank.curr_state == State.PRE_FERMENTATION:

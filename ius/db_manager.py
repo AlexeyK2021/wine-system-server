@@ -16,8 +16,81 @@ def get_sensors(sensors_text):
 def get_actuators(actuators_text):
     actuators = list()
     for a in actuators_text:
-        actuators.append(Actuator(id=a[0], name=a[1], model=a[2], ip=a[5], port=a[6], state_node_id=a[7], cmnd_node_id=a[8]))
+        actuators.append(
+            Actuator(id=a[0], name=a[1], model=a[2], ip=a[5], port=a[6], state_node_id=a[7], cmnd_node_id=a[8]))
     return actuators
+
+
+def write_sensor_log(sensor_id, value):
+    try:
+        con = mariadb.connect(
+            user=DB_USER,
+            password=DB_PASSWD,
+            host=DB_IP,
+            port=DB_PORT,
+            database=DB_NAME
+        )
+    except mariadb.Error as ex:
+        print(f"An error occurred while connecting to MariaDB: {ex}")
+        return None
+    cur = con.cursor()
+    cur.execute("INSERT INTO sensor_log(value, sensor_id) VALUES (?, ?);", (value, sensor_id))
+    con.commit()
+    con.close()
+
+
+def write_actuator_log(actuator_id, state):
+    try:
+        con = mariadb.connect(
+            user=DB_USER,
+            password=DB_PASSWD,
+            host=DB_IP,
+            port=DB_PORT,
+            database=DB_NAME
+        )
+    except mariadb.Error as ex:
+        print(f"An error occurred while connecting to MariaDB: {ex}")
+        return None
+    cur = con.cursor()
+    cur.execute("INSERT INTO actuator_log(state, actuator_id) VALUES (?, ?);", (state, actuator_id))
+    con.commit()
+    con.close()
+
+
+def write_start_process_log(tank_id, curr_state):
+    try:
+        con = mariadb.connect(
+            user=DB_USER,
+            password=DB_PASSWD,
+            host=DB_IP,
+            port=DB_PORT,
+            database=DB_NAME
+        )
+    except mariadb.Error as ex:
+        print(f"An error occurred while connecting to MariaDB: {ex}")
+        return None
+    cur = con.cursor()
+    cur.execute("INSERT INTO process_log (description, tank_id) VALUES (?, ?);", (curr_state, tank_id))
+    con.commit()
+    con.close()
+
+
+def write_end_process_log(tank_id, result):
+    try:
+        con = mariadb.connect(
+            user=DB_USER,
+            password=DB_PASSWD,
+            host=DB_IP,
+            port=DB_PORT,
+            database=DB_NAME
+        )
+    except mariadb.Error as ex:
+        print(f"An error occurred while connecting to MariaDB: {ex}")
+        return None
+    cur = con.cursor()
+    cur.execute("UPDATE process_log SET `end`=NOW(), result_id=? WHERE tank_id=? AND `end` is NULL;", (result, tank_id,))
+    con.commit()
+    con.close()
 
 
 def get_tanks():
