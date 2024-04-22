@@ -1,7 +1,6 @@
 from time import sleep
 from opcua import Client
 
-
 def get_value(ip, port, node_id):
     client = Client(f"opc.tcp://{ip}:{port}")
     try:
@@ -15,6 +14,8 @@ def get_value(ip, port, node_id):
         print("Cant connect to sensor")
         return None
 
+def set_value(ip, port, node_id, value):
+    pass
 
 if __name__ == '__main__':
     ip = "127.0.0.1"

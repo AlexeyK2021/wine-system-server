@@ -1,21 +1,12 @@
-from db.models.BaseModelClass import BaseModelClass
-from sqlalchemy import Column, Integer, String, ForeignKey
-from sqlalchemy.orm import relationship
+class Actuator:
+    def __init__(self, id, name, model, ip, port, state_node_id, cmnd_node_id):
+        self.id = id
+        self.name = name
+        self.model = model
+        self.ip = ip
+        self.port = port
+        self.state_node_id = state_node_id
+        self.cmnd_node_id = cmnd_node_id
 
-from db.models.Tank import Tank
-from db.models.ActuatorType import ActuatorType
-
-
-class Actuator(BaseModelClass):
-    __tablename__ = "actuator"
-
-    id = Column(Integer, primary_key=True, autoincrement=True)
-    name = Column(String(128), nullable=False)
-    model = Column(String(128), nullable=True)
-    mqtt_name = Column(String(64), nullable=False)
-    type_id = Column(Integer, ForeignKey("actuator_type.id"))
-    type = relationship("ActuatorType", back_populates="actuators")
-    tank_id = Column(Integer, ForeignKey("tank.id"))
-    tank = relationship("Tank", back_populates="actuators")
-    logs = relationship("ActuatorLog", back_populates="actuator")
-
+    def __str__(self):
+        return f"Id={self.id}; name={self.name}; model={self.model}; ip={self.ip}; port={self.port}; state_node_id={self.state_node_id}; cmnd_node_id={self.cmnd_node_id}"
