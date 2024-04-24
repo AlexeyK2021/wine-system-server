@@ -4,7 +4,9 @@ from ius import db_manager
 from ius.State import State
 
 if __name__ == '__main__':
+    pass
     # db_manager.write_actuator_log(2,False)
     # db_manager.write_start_process_log(1, State.EMPTY_TANK_STATE.value)
     # sleep(1)
     # db_manager.write_end_process_log(1, 1)
+    print(State(db_manager.get_current_tank_state(1)))

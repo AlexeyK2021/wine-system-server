@@ -79,10 +79,51 @@ def get_current_temp(tank_id):
     WHERE t.id = ? AND pt.name = 'Температура'\
     ORDER BY sl.`datetime` DESC LIMIT 1;", (tank_id,))
     result = cur.fetchone()
+    con.close()
     return result
+
+
+def write_user_log(login: str, actionId: int):
+    try:
+        con = mariadb.connect(
+            user=DB_USER,
+            password=DB_PASSWD,
+            host=DB_IP,
+            port=DB_PORT,
+            database=DB_NAME
+        )
+    except mariadb.Error as ex:
+        print(f"An error occurred while connecting to MariaDB: {ex}")
+        return None
+    cur = con.cursor()
+    cur.execute("SELECT id FROM user WHERE login=?;", (login,))
+    userId = cur.fetchone()[0]
+    cur.execute("INSERT INTO user_log(user_id, action_id) VALUES (?, ?);", (userId, actionId))
+    con.commit()
+    con.close()
+
+
+def emergency_stop(tank_id: int, login: str):
+    try:
+        con = mariadb.connect(
+            user=DB_USER,
+            password=DB_PASSWD,
+            host=DB_IP,
+            port=DB_PORT,
+            database=DB_NAME
+        )
+    except mariadb.Error as ex:
+        print(f"An error occurred while connecting to MariaDB: {ex}")
+        return None
+    cur = con.cursor()
+    cur.execute("SELECT id FROM user WHERE login=?;", (login,))
+    user_id = cur.fetchone()[0]
+    cur.execute("INSERT INTO user_log(user_id, action_id) VALUES (?, 3);", (user_id,))
+    cur.execute("UPDATE process_log SET `end`=NOW(), result_id=2 WHERE tank_id=? AND `end`=NULL;", (tank_id,))
+    con.commit()
+    con.close()
 
 
 if __name__ == '__main__':
     temp, datetime = get_current_temp(1)
     print(datetime.isoformat())
-

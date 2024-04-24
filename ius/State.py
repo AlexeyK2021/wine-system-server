@@ -3,17 +3,18 @@ from ius import opcua_manager, db_manager
 
 
 class State(enum.Enum):
-    EMPTY_TANK_STATE = "Инициализация емкости"
+    START_STATE = 0
+    EMPTY_TANK_STATE = 1
     # Состояния для бурного брожения
-    FILL_FF_TANK = "Наполнение танка бурного брожения"
-    PRE_FERMENTATION = "Забраживание"
-    FAST_FERMENTATION = "Бурное брожение"
-    DRAIN_FF_TANK = "Опорожнение танка бурного брожение"
+    FILL_FF_TANK = 2
+    PRE_FERMENTATION = 3
+    FAST_FERMENTATION = 4
+    DRAIN_FF_TANK = 5
 
     # Состояния для тихого брожения
-    FILL_SF_TANK = "Наполнение танка тихого брожения"
-    SLOW_FERMENTATION = "Тихое брожение"
-    DRAIN_SF_TANK = "Опорожнение танка бурного брожение"
+    FILL_SF_TANK = 6
+    SLOW_FERMENTATION = 7
+    DRAIN_SF_TANK = 8
 
 
 def write_actuator_log(actuator, state):
@@ -30,6 +31,12 @@ def start_process_log(tank):
 
 def end_process_log(tank, result):
     db_manager.write_end_process_log(tank.id, 1)
+
+
+def check_sensor(sensor):
+    value = opcua_manager.get_value(sensor.ip, sensor.port, sensor.node_id)
+    write_sensor_log(sensor, value)
+    return value
 
 
 def init_tank(tank):
@@ -89,13 +96,8 @@ def end_fill_tank(tank):
     write_actuator_log(tank.input_valve, False)
 
 
-def check_sensor(sensor):
-    value = opcua_manager.get_value(sensor.ip, sensor.port, sensor.node_id)
-    write_sensor_log(sensor, value)
-    return value
-
-
 def control(tank):
+    tank.curr_state = State(db_manager.get_current_tank_state(tank.id))
     if tank.type_id == 1:
         if tank.curr_state == State.EMPTY_TANK_STATE:
             start_process_log(tank)
@@ -119,6 +121,9 @@ def control(tank):
         elif tank.curr_state == State.FAST_FERMENTATION:
             # TODO
             tank.curr_state = State.DRAIN_FF_TANK
+        elif tank.curr_state == State.DRAIN_FF_TANK:
+            # TODO
+            tank.curr_state = State.START_STATE
 
     elif tank.type_id == 2:
         if tank.curr_state == State.EMPTY_TANK_STATE:
@@ -132,3 +137,7 @@ def control(tank):
         elif tank.curr_state == State.SLOW_FERMENTATION:
             # TODO
             tank.curr_state = State.DRAIN_SF_TANK
+
+        elif tank.curr_state == State.DRAIN_SF_TANK:
+            # TODO
+            tank.curr_state = State.START_STATE

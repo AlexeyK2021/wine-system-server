@@ -1,9 +1,9 @@
 import mariadb
 
 from config import DB_PASSWD, DB_USER, DB_IP, DB_PORT, DB_NAME
-from db.models.Actuator import Actuator
-from db.models.Sensor import Sensor
-from db.models.Tank import Tank
+from ius.models.Actuator import Actuator
+from ius.models.Sensor import Sensor
+from ius.models.Tank import Tank
 
 
 def get_sensors(sensors_text):
@@ -70,7 +70,9 @@ def write_start_process_log(tank_id, curr_state):
         print(f"An error occurred while connecting to MariaDB: {ex}")
         return None
     cur = con.cursor()
-    cur.execute("INSERT INTO process_log (description, tank_id) VALUES (?, ?);", (curr_state, tank_id))
+    cur.execute("SELECT id FROM process WHERE name = ;", (curr_state,))
+    process_id = cur.fetchone()[0]
+    cur.execute("INSERT INTO process_log (process_id, tank_id) VALUES (?, ?);", (process_id, tank_id))
     con.commit()
     con.close()
 
@@ -88,7 +90,8 @@ def write_end_process_log(tank_id, result):
         print(f"An error occurred while connecting to MariaDB: {ex}")
         return None
     cur = con.cursor()
-    cur.execute("UPDATE process_log SET `end`=NOW(), result_id=? WHERE tank_id=? AND `end` is NULL;", (result, tank_id,))
+    cur.execute("UPDATE process_log SET `end`=NOW(), result_id=? WHERE tank_id=? AND `end` is NULL;",
+                (result, tank_id,))
     con.commit()
     con.close()
 
@@ -144,3 +147,22 @@ def get_tank_type_by_id(id):
     cur.execute("select name from tank_type WHERE id = ?;", (id,))
     result = cur.fetchone()[0]
     return result
+
+
+def get_current_tank_state(tank_id: int):
+    try:
+        con = mariadb.connect(
+            user=DB_USER,
+            password=DB_PASSWD,
+            host=DB_IP,
+            port=DB_PORT,
+            database=DB_NAME
+        )
+    except mariadb.Error as ex:
+        print(f"An error occurred while connecting to MariaDB: {ex}")
+        return None
+    cur = con.cursor()
+    cur.execute("SELECT process_id FROM process_log AS pl WHERE tank_id=? ORDER BY id  DESC LIMIT 1;", (tank_id,))
+    state = cur.fetchone()[0]
+    # print(state)
+    return state

@@ -8,8 +8,9 @@ import db_manager
 app = FastAPI()
 
 
-def user_log(tag, msg):
-    print(f"############-- {tag}:{msg} --############ ")
+def user_log(login, actionId):
+    # print(f"############-- {tag}:{msg} --############ ")
+    db_manager.write_user_log(login, actionId)
 
 
 @app.get("/api/auth/{login}&{passwd}")
@@ -18,10 +19,10 @@ async def auth(login, passwd):
     if password is None:
         return Response(status_code=500)
     if password == passwd:
-        user_log(tag="Вход", msg=f"Login={login}, Passwd={passwd}")
+        user_log(login=login, actionId=1)
         return Response(status_code=200)
     else:
-        user_log(tag="Неудачная попытка входа", msg=f"Login={login}, Passwd={passwd}")
+        user_log(login=login, actionId=2)
         return Response(status_code=401)
 
 
@@ -43,6 +44,11 @@ async def get_current_temp(tank_id):
     })
 
 
+@app.get("/api/process/stop/{tank_id}&{login}")
+async def emergency_stop(tank_id, login):
+    db_manager.emergency_stop(tank_id, login)
+
+
 # @app.post("/api/auth/")
 # async def auth(data=Body()):
 #     print(data)
@@ -61,3 +67,4 @@ async def get_current_temp(tank_id):
 
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=API_PORT, log_level="info")
+    # db_manager.write_user_log("admin", 1)

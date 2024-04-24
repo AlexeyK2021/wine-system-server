@@ -1,5 +1,5 @@
-from db.models.Actuator import Actuator
-from db.models.Sensor import Sensor
+from ius.models.Actuator import Actuator
+from ius.models.Sensor import Sensor
 from ius.State import State
 
 
@@ -11,7 +11,7 @@ class Tank:
         self.id = id
         self.name = name
         self.type_id = type_id
-        self.curr_state = State.EMPTY_TANK_STATE
+        self.curr_state = State.START_STATE
 
         self.temp_sensor = temp_sensor
         self.pres_sensor = pres_sensor
