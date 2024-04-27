@@ -1,7 +1,8 @@
+import datetime
 from time import sleep
 
 from ius import db_manager
-from ius.State import State
+from ius.State import State, control_process
 
 if __name__ == '__main__':
     pass
@@ -9,4 +10,15 @@ if __name__ == '__main__':
     # db_manager.write_start_process_log(1, State.EMPTY_TANK_STATE.value)
     # sleep(1)
     # db_manager.write_end_process_log(1, 1)
-    print(State(db_manager.get_current_tank_state(1)))
+    # tanks = db_manager.get_tanks()
+    # tanks = db_manager.get_tanks()
+    # tanks.pop(1)
+    # while True:
+    #     for tank in tanks:
+    #         control_process(tank)
+    #         sleep(5)
+    # db_manager.get_remaining_time_of_process(1)
+    # exec_time = 72000
+    # start_time = datetime.datetime(2024, 4, 27, 17, 0, 48, 0)
+    # remain_time = exec_time - datetime.datetime.now().timestamp() + start_time.timestamp()
+    # print(remain_time)

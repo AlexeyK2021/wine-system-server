@@ -19,7 +19,7 @@ import mariadb
 from config import DB_PASSWD, DB_USER, DB_IP, DB_PORT, DB_NAME
 
 
-def get_passwd_by_login(login: str):
+def get_passwd_by_login(login: str, passwd: str):
     try:
         con = mariadb.connect(
             user=DB_USER,
@@ -32,7 +32,7 @@ def get_passwd_by_login(login: str):
         print(f"An error occurred while connecting to MariaDB: {ex}")
         return None
     cur = con.cursor()
-    cur.execute("SELECT password FROM user WHERE login=?", (login,))
+    cur.execute("SELECT check_auth(?, ?');", (login, passwd,))
     result = cur.fetchone()[0]
     con.close()
     return result

@@ -15,10 +15,10 @@ def user_log(login, actionId):
 
 @app.get("/api/auth/{login}&{passwd}")
 async def auth(login, passwd):
-    password = db_manager.get_passwd_by_login(login)
-    if password is None:
+    result = db_manager.get_passwd_by_login(login, passwd)
+    if result is None:
         return Response(status_code=500)
-    if password == passwd:
+    if result:
         user_log(login=login, actionId=1)
         return Response(status_code=200)
     else:

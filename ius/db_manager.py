@@ -1,3 +1,5 @@
+import datetime
+
 import mariadb
 
 from config import DB_PASSWD, DB_USER, DB_IP, DB_PORT, DB_NAME
@@ -57,7 +59,7 @@ def write_actuator_log(actuator_id, state):
     con.close()
 
 
-def write_start_process_log(tank_id, curr_state):
+def write_start_process_log(tank_id, process_id):
     try:
         con = mariadb.connect(
             user=DB_USER,
@@ -70,8 +72,8 @@ def write_start_process_log(tank_id, curr_state):
         print(f"An error occurred while connecting to MariaDB: {ex}")
         return None
     cur = con.cursor()
-    cur.execute("SELECT id FROM process WHERE name = ;", (curr_state,))
-    process_id = cur.fetchone()[0]
+    # cur.execute("SELECT id FROM process WHERE name = ?;", (curr_state,))
+    # process_id = cur.fetchone()[0]
     cur.execute("INSERT INTO process_log (process_id, tank_id) VALUES (?, ?);", (process_id, tank_id))
     con.commit()
     con.close()
@@ -127,8 +129,8 @@ def get_tanks():
             output_valve=actuators[3], he_pump=actuators[4], output_pump=actuators[5]
         ))
     con.close()
-    print(*tanks)
-    # return tanks
+    # print(*tanks)
+    return tanks
 
 
 def get_tank_type_by_id(id):
@@ -146,6 +148,7 @@ def get_tank_type_by_id(id):
     cur = con.cursor()
     cur.execute("select name from tank_type WHERE id = ?;", (id,))
     result = cur.fetchone()[0]
+    con.close()
     return result
 
 
@@ -162,7 +165,57 @@ def get_current_tank_state(tank_id: int):
         print(f"An error occurred while connecting to MariaDB: {ex}")
         return None
     cur = con.cursor()
-    cur.execute("SELECT process_id FROM process_log AS pl WHERE tank_id=? ORDER BY id  DESC LIMIT 1;", (tank_id,))
-    state = cur.fetchone()[0]
-    # print(state)
-    return state
+    cur.execute("CALL get_tank_last_state(?)", (tank_id,))
+    result = cur.fetchone()[6]
+    con.close()
+    print(result)
+    if result is None:
+        return 0
+    return result
+
+
+def get_remaining_time_of_process(tank_id):  # получение прошедшего времени с начала процесса в секундах
+    try:
+        con = mariadb.connect(
+            user=DB_USER,
+            password=DB_PASSWD,
+            host=DB_IP,
+            port=DB_PORT,
+            database=DB_NAME
+        )
+    except mariadb.Error as ex:
+        print(f"An error occurred while connecting to MariaDB: {ex}")
+        return None
+    cur = con.cursor()
+    cur.execute("CALL get_tank_last_state(?)", (tank_id,))
+    result = cur.fetchone()
+    start_time = result[1]
+    cur.execute("SELECT execution_time FROM process WHERE id = ?", (result[6],))
+    exec_time = cur.fetchone()[0]
+    con.close()
+    print(exec_time)
+    remain_time = exec_time - datetime.datetime.now().timestamp() + start_time.timestamp()
+    print(remain_time)
+    if exec_time is None:
+        return 0
+    return remain_time
+
+
+def get_parameter_interval(param_id):
+    try:
+        con = mariadb.connect(
+            user=DB_USER,
+            password=DB_PASSWD,
+            host=DB_IP,
+            port=DB_PORT,
+            database=DB_NAME
+        )
+    except mariadb.Error as ex:
+        print(f"An error occurred while connecting to MariaDB: {ex}")
+        return None
+    cur = con.cursor()
+    cur.execute("SELECT min_value, max_value FROM `parameter` WHERE id = ?;", (param_id,))
+    result = cur.fetchone()
+    con.close()
+    print(result)
+    return result
