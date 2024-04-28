@@ -124,6 +124,10 @@ def emergency_stop(tank_id: int, login: str):
     con.close()
 
 
+def init_tank(tank_id):
+    return None
+
+
 if __name__ == '__main__':
     temp, datetime = get_current_temp(1)
     print(datetime.isoformat())

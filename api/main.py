@@ -48,6 +48,10 @@ async def get_current_temp(tank_id):
 async def emergency_stop(tank_id, login):
     db_manager.emergency_stop(tank_id, login)
 
+@app.get("/api/process/start/{tank_id}")
+async def init_tank(tank_id):
+    db_manager.init_tank(tank_id)
+
 
 # @app.post("/api/auth/")
 # async def auth(data=Body()):

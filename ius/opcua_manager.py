@@ -30,8 +30,20 @@ def set_value(ip, port, node_id, value):
         print("Cant connect to sensor")
 
 
-def set_value(actuator, value):
-    set_value(actuator.ip, actuator.port, actuator.cmnd_node_id, value)
+# def set_value(actuator, value):
+#     # set_value(actuator.ip, actuator.port, actuator.cmnd_node_id, value)
+#     ip = actuator.ip
+#     port = actuator.port
+#     node_id = actuator.cmnd_node_id
+#     client = Client(f"opc.tcp://{ip}:{port}")
+#     try:
+#         client.connect()
+#         # root = client.get_root_node()
+#         sensor = client.get_node(node_id)
+#         sensor.set_value(value)
+#         client.disconnect()
+#     except ConnectionRefusedError:
+#         print("Cant connect to sensor")
 
 
 if __name__ == '__main__':

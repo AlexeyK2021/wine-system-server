@@ -3,7 +3,7 @@ from ius import opcua_manager, db_manager
 
 
 class State(enum.Enum):
-    START_STATE = 0
+    START_STATE = 9
     EMPTY_TANK_STATE = 1
 
     # Состояния для бурного брожения
@@ -16,6 +16,8 @@ class State(enum.Enum):
     FILL_SF_TANK = 6
     SLOW_FERMENTATION = 7
     DRAIN_SF_TANK = 8
+
+    EMERGENCY_STOP = 10
 
 
 def write_actuator_log(actuator, state):
@@ -44,6 +46,13 @@ def check_actuator(actuator):
     return opcua_manager.get_value(actuator.ip, actuator.port, actuator.state_node_id)
 
 
+def set_actuator(actuator, value):
+    curr_state = check_actuator(actuator)
+    if curr_state != value:
+        opcua_manager.set_value(actuator.ip, actuator.port, actuator.cmnd_node_id, value)
+        write_actuator_log(actuator, value)
+
+
 def init_tank(tank):
     input_valve = tank.input_valve
     he_pump = tank.he_pump
@@ -53,31 +62,23 @@ def init_tank(tank):
     output_valve = tank.output_valve
     co2_valve = tank.co2_valve
 
-    opcua_manager.set_value(input_valve, False)
-    opcua_manager.set_value(he_pump, False)
-    opcua_manager.set_value(he_input_valve, False)
-    opcua_manager.set_value(he_output_valve, False)
-    opcua_manager.set_value(output_pump, False)
-    opcua_manager.set_value(output_valve, False)
-    opcua_manager.set_value(co2_valve, True)
-
-    write_actuator_log(input_valve, False)
-    write_actuator_log(he_pump, False)
-    write_actuator_log(he_input_valve, False)
-    write_actuator_log(he_output_valve, False)
-    write_actuator_log(output_pump, False)
-    write_actuator_log(output_valve, False)
-    write_actuator_log(co2_valve, True)
+    set_actuator(input_valve, False)
+    set_actuator(he_pump, False)
+    set_actuator(he_input_valve, False)
+    set_actuator(he_output_valve, False)
+    set_actuator(output_pump, False)
+    set_actuator(output_valve, False)
+    set_actuator(co2_valve, True)
 
 
 def check_init(tank):
-    input_valve_state = check_sensor(tank.input_valve)
-    he_pump_state = check_sensor(tank.he_pump)
-    he_input_valve_state = check_sensor(tank.he_input_valve)
-    he_output_valve_state = check_sensor(tank.he_output_valve)
-    output_pump_state = check_sensor(tank.output_pump)
-    output_valve_state = check_sensor(tank.output_valve)
-    co2_valve_state = check_sensor(tank.co2_valve)
+    input_valve_state = check_actuator(tank.input_valve)
+    he_pump_state = check_actuator(tank.he_pump)
+    he_input_valve_state = check_actuator(tank.he_input_valve)
+    he_output_valve_state = check_actuator(tank.he_output_valve)
+    output_pump_state = check_actuator(tank.output_pump)
+    output_valve_state = check_actuator(tank.output_valve)
+    co2_valve_state = check_actuator(tank.co2_valve)
 
     return (
             (not input_valve_state) and (not he_pump_state) and (not he_input_valve_state) and
@@ -87,30 +88,27 @@ def check_init(tank):
 
 
 def fill_tank(tank):
-    input_valve = tank.input_valve
-    opcua_manager.set_value(input_valve.ip, input_valve.port, input_valve.cmnd_node_id, True)
-    write_actuator_log(input_valve, True)
+    set_actuator(tank.input_valve, True)
 
 
 def end_fill_tank(tank):
-    input_valve = tank.input_valve
-    opcua_manager.set_value(input_valve.ip, input_valve.port, input_valve.cmnd_node_id, False)
-    write_actuator_log(input_valve, False)
+    set_actuator(tank.input_valve, False)
 
 
 def control_temp(tank):  ## при холодном открываем краны, при горячем открываем краны.
     temp = check_sensor(tank.temp_sensor)  ## Может их открыть с самого начала?
     min_temp, max_temp = db_manager.get_parameter_interval(tank.temp_sensor.param_id)
-    # avg = (min_temp + max_temp) / 2
+    avg = (min_temp + max_temp) / 2
+    delta = 1.5
 
-    if temp < min_temp or temp > max_temp:
-        opcua_manager.set_value(tank.he_input_valve, True)
-        opcua_manager.set_value(tank.he_output_valve, True)
-        opcua_manager.set_value(tank.he_pump, True)
-
-        write_actuator_log(tank.he_input_valve, True)
-        write_actuator_log(tank.he_output_valve, True)
-        write_actuator_log(tank.he_pump, True)
+    if temp <= avg - delta or temp >= avg + delta:
+        set_actuator(tank.he_input_valve, True)
+        set_actuator(tank.he_output_valve, True)
+        set_actuator(tank.he_pump, True)
+    elif avg + delta > temp > avg - delta:
+        set_actuator(tank.he_input_valve, False)
+        set_actuator(tank.he_output_valve, False)
+        set_actuator(tank.he_pump, False)
 
 
 def control_pressure(tank):
@@ -119,29 +117,20 @@ def control_pressure(tank):
 
     if pres > max_pres:
         if not check_actuator(tank.co2_valve):
-            opcua_manager.set_value(tank.co2_valve, True)
-            write_actuator_log(tank.co2_valve, True)
+            set_actuator(tank.co2_valve, True)
         else:
             pass
             # TODO Тревога
 
 
 def drain_tank(tank):
-    output_valve = tank.output_valve
-    output_pump = tank.output_pump
-    opcua_manager.set_value(output_valve.ip, output_valve.port, output_valve.cmnd_node_id, True)
-    opcua_manager.set_value(output_pump.ip, output_pump.port, output_pump.cmnd_node_id, True)
-    write_actuator_log(output_valve, True)
-    write_actuator_log(output_pump, True)
+    set_actuator(tank.output_valve, True)
+    set_actuator(tank.output_pump, True)
 
 
 def end_drain_tank(tank):
-    output_valve = tank.output_valve
-    output_pump = tank.output_pump
-    opcua_manager.set_value(output_valve.ip, output_valve.port, output_valve.cmnd_node_id, False)
-    opcua_manager.set_value(output_pump.ip, output_pump.port, output_pump.cmnd_node_id, False)
-    write_actuator_log(output_valve, False)
-    write_actuator_log(output_pump, False)
+    set_actuator(tank.output_valve, False)
+    set_actuator(tank.output_pump, False)
 
 
 def print_curr_state(tank):
@@ -169,7 +158,6 @@ def control_process(tank):
 
     if tank.type_id == 1:
         if tank.curr_state == State.EMPTY_TANK_STATE:
-            # start_process_log(tank)
             init_tank(tank)
             if check_init(tank):
                 end_process_log(tank, True)
@@ -186,7 +174,7 @@ def control_process(tank):
 
         elif tank.curr_state == State.PRE_FERMENTATION:
             control_temp(tank)
-            # control_pressure(tank)
+            control_pressure(tank)
             if db_manager.get_remaining_time_of_process(tank.id) <= 0:
                 end_process_log(tank, True)
                 tank.curr_state = State.FAST_FERMENTATION
@@ -194,7 +182,7 @@ def control_process(tank):
 
         elif tank.curr_state == State.FAST_FERMENTATION:
             control_temp(tank)
-            # control_pressure(tank)
+            control_pressure(tank)
             if db_manager.get_remaining_time_of_process(tank.id) <= 0:
                 end_process_log(tank, True)
                 tank.curr_state = State.DRAIN_FF_TANK
@@ -206,6 +194,11 @@ def control_process(tank):
                 end_drain_tank(tank)
                 end_process_log(tank, True)
                 tank.curr_state = State.START_STATE
+                start_process_log(tank)
+
+        elif tank.curr_state == State.EMERGENCY_STOP:
+            # TODO
+            pass
 
     elif tank.type_id == 2:
         if tank.curr_state == State.EMPTY_TANK_STATE:
@@ -223,3 +216,7 @@ def control_process(tank):
         elif tank.curr_state == State.DRAIN_SF_TANK:
             # TODO
             tank.curr_state = State.START_STATE
+
+        elif tank.curr_state == State.EMERGENCY_STOP:
+            # TODO
+            pass

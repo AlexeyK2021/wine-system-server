@@ -3,6 +3,7 @@ import datetime
 import mariadb
 
 from config import DB_PASSWD, DB_USER, DB_IP, DB_PORT, DB_NAME
+from ius.State import State
 from ius.models.Actuator import Actuator
 from ius.models.Sensor import Sensor
 from ius.models.Tank import Tank
@@ -166,12 +167,15 @@ def get_current_tank_state(tank_id: int):
         return None
     cur = con.cursor()
     cur.execute("CALL get_tank_last_state(?)", (tank_id,))
-    result = cur.fetchone()[6]
+    result = cur.fetchone()
     con.close()
-    print(result)
+    # print(result)
     if result is None:
         return 0
-    return result
+    if result[5] is None or result[5] == 1:
+        return result[6]
+    elif result[5] == 2:
+        return State.EMERGENCY_STOP
 
 
 def get_remaining_time_of_process(tank_id):  # получение прошедшего времени с начала процесса в секундах
@@ -193,7 +197,7 @@ def get_remaining_time_of_process(tank_id):  # получение прошедш
     cur.execute("SELECT execution_time FROM process WHERE id = ?", (result[6],))
     exec_time = cur.fetchone()[0]
     con.close()
-    print(exec_time)
+    # print(exec_time)
     remain_time = exec_time - datetime.datetime.now().timestamp() + start_time.timestamp()
     print(remain_time)
     if exec_time is None:
@@ -217,5 +221,5 @@ def get_parameter_interval(param_id):
     cur.execute("SELECT min_value, max_value FROM `parameter` WHERE id = ?;", (param_id,))
     result = cur.fetchone()
     con.close()
-    print(result)
+    # print(result)
     return result

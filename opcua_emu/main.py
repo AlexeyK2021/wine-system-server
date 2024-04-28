@@ -24,7 +24,8 @@ co2_valve = objects.add_object(idx, "CO2 Valve")
 he_input_valve = objects.add_object(idx, "HE Input Valve")
 he_output_valve = objects.add_object(idx, "HE Output Valve")
 # valve_controller = objects.add_object(idx, "Valve Controller")
-
+# init_state_button = objects.add_object(idx, "INIT")
+# init_btn = init_state_button.add_variable(idx, "Init", False)
 ##########################SENSORS##################################
 t_status = temp_sensor.add_variable(idx, "Status", True)
 t_status.set_writable(writable=False)
@@ -112,6 +113,17 @@ if __name__ == '__main__':
             #     f"Up={ul_value.get_value()};\n"
             #     f"Down={dl_value.get_value()}"
             # )
+            # if init_btn.get_value():
+            #     iv_state.set_value(False)
+            #     op_state.set_value(False)
+            #     he_pump_state.set_value(False)
+            #     ov_state.set_value(False)
+            #     co2_state.set_value(False)
+            #     he_iv_state.set_value(False)
+            #     he_ov_state.set_value(False)
+            #     ul_value.set_value(False)
+            #     dl_value.set_value(False)
+            #     init_btn.set_value(False)
             time.sleep(0.5)
     except KeyboardInterrupt:
         server.stop()
