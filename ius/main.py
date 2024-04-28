@@ -10,7 +10,6 @@ if __name__ == '__main__':
     # sleep(1)
     # db_manager.write_end_process_log(1, 1)
     tanks = db_manager.get_tanks()
-    tanks.pop(1)
     while True:
         for tank in tanks:
             control_process(tank)

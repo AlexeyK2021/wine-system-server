@@ -1,9 +1,8 @@
 from opcua import Server
-import random
 import time
 
 OPC_IP = "0.0.0.0"
-OPC_PORT = 4841
+OPC_PORT = 4840
 OPC_NAMESPACE = "OPC_TEST_SERVER"
 
 server = Server()
