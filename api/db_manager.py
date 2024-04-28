@@ -32,8 +32,9 @@ def get_passwd_by_login(login: str, passwd: str):
         print(f"An error occurred while connecting to MariaDB: {ex}")
         return None
     cur = con.cursor()
-    cur.execute("SELECT check_auth(?, ?');", (login, passwd,))
-    result = cur.fetchone()[0]
+    cur.execute("SELECT check_auth(?, ?);", (login, passwd,))
+    result = cur.fetchone()
+    print(result)
     con.close()
     return result
 
@@ -70,14 +71,7 @@ def get_current_temp(tank_id):
         print(f"An error occurred while connecting to MariaDB: {ex}")
         return None
     cur = con.cursor()
-    cur.execute("\
-    SELECT sl.value, sl.`datetime` FROM tank AS t \
-    JOIN sensor AS s ON s.type_id = t.id\
-    JOIN `parameter` AS p ON s.parameter_id = p.id\
-    JOIN param_type AS pt ON p.type_id = pt.id\
-    JOIN sensor_log AS sl ON sl.sensor_id = s.id\
-    WHERE t.id = ? AND pt.name = 'Температура'\
-    ORDER BY sl.`datetime` DESC LIMIT 1;", (tank_id,))
+    cur.execute("CALL get_current_temp(?)", (tank_id,))
     result = cur.fetchone()
     con.close()
     return result
@@ -119,13 +113,31 @@ def emergency_stop(tank_id: int, login: str):
     cur.execute("SELECT id FROM user WHERE login=?;", (login,))
     user_id = cur.fetchone()[0]
     cur.execute("INSERT INTO user_log(user_id, action_id) VALUES (?, 3);", (user_id,))
-    cur.execute("UPDATE process_log SET `end`=NOW(), result_id=2 WHERE tank_id=? AND `end`=NULL;", (tank_id,))
+    cur.execute("UPDATE process_log SET `end`=NOW(), result_id=2 WHERE tank_id=? AND `end` is NULL;", (tank_id,))
     con.commit()
     con.close()
 
 
-def init_tank(tank_id):
-    return None
+def init_tank(tank_id, login: str):
+    try:
+        con = mariadb.connect(
+            user=DB_USER,
+            password=DB_PASSWD,
+            host=DB_IP,
+            port=DB_PORT,
+            database=DB_NAME
+        )
+    except mariadb.Error as ex:
+        print(f"An error occurred while connecting to MariaDB: {ex}")
+        return None
+    cur = con.cursor()
+    cur.execute("SELECT id FROM user WHERE login=?;", (login,))
+    user_id = cur.fetchone()[0]
+    cur.execute("INSERT INTO user_log(user_id, action_id) VALUES (?, 4);", (user_id,))
+    cur.execute("UPDATE process_log SET `end`=NOW() WHERE tank_id=? AND `end` is NULL;", (tank_id,))
+    cur.execute("INSERT INTO process_log(tank_id, process_id) VALUES (?,1);", (tank_id,))
+    con.commit()
+    con.close()
 
 
 if __name__ == '__main__':

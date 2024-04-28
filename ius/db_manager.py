@@ -3,10 +3,10 @@ import datetime
 import mariadb
 
 from config import DB_PASSWD, DB_USER, DB_IP, DB_PORT, DB_NAME
-from ius.State import State
-from ius.models.Actuator import Actuator
-from ius.models.Sensor import Sensor
-from ius.models.Tank import Tank
+from models.Actuator import Actuator
+from models.Sensor import Sensor
+from models.State import State
+from models.Tank import Tank
 
 
 def get_sensors(sensors_text):

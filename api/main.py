@@ -13,8 +13,9 @@ def user_log(login, actionId):
     db_manager.write_user_log(login, actionId)
 
 
-@app.get("/api/auth/{login}&{passwd}")
+@app.get("/api/auth/login={login}&passwd={passwd}")
 async def auth(login, passwd):
+    print(login, passwd)
     result = db_manager.get_passwd_by_login(login, passwd)
     if result is None:
         return Response(status_code=500)
@@ -44,13 +45,20 @@ async def get_current_temp(tank_id):
     })
 
 
-@app.get("/api/process/stop/{tank_id}&{login}")
-async def emergency_stop(tank_id, login):
+@app.get("/api/process/info/{tank_id}")
+async def get_info(tank_id):
+    pass
+
+
+@app.get("/api/process/stop/tank={tank_id}&login={login}")
+def emergency_stop(tank_id: int, login):
+    print(f"tank{tank_id} login:{login}")
     db_manager.emergency_stop(tank_id, login)
 
-@app.get("/api/process/start/{tank_id}")
-async def init_tank(tank_id):
-    db_manager.init_tank(tank_id)
+
+@app.get("/api/process/start/tank={tank_id}&login={login}")
+async def init_tank(tank_id: int, login: str):
+    db_manager.init_tank(tank_id, login)
 
 
 # @app.post("/api/auth/")

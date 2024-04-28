@@ -1,7 +1,4 @@
-from time import sleep
 from opcua import Client
-
-from ius.models.Actuator import Actuator
 
 
 def get_value(ip, port, node_id):
@@ -46,16 +43,16 @@ def set_value(ip, port, node_id, value):
 #         print("Cant connect to sensor")
 
 
-if __name__ == '__main__':
-    ip = "127.0.0.1"
-    port = 4841
-    node_id = "ns=2;i=6"
-    last_val = 0
-    while 1:
-        new_val = get_value(ip, port, node_id)
-        if last_val != new_val:
-            print(new_val)
-            last_val = new_val
+# if __name__ == '__main__':
+#     ip = "127.0.0.1"
+#     port = 4841
+#     node_id = "ns=2;i=6"
+#     last_val = 0
+#     while 1:
+#         new_val = get_value(ip, port, node_id)
+#         if last_val != new_val:
+#             print(new_val)
+#             last_val = new_val
 # client = Client("opc.tcp://127.0.0.1:4841")
 # # client = Client("opc.tcp://admin@localhost:4840/freeopcua/server/") #connect using a user
 # while True:

@@ -1,4 +1,4 @@
-class Sensor():
+class Sensor:
 
     def __init__(self, id, name, model, paramId, ip, port, nodeId):
         self.id = id

@@ -1,8 +1,7 @@
-import datetime
 from time import sleep
 
-from ius import db_manager
-from ius.State import State, control_process
+import db_manager
+from control import control_process
 
 if __name__ == '__main__':
     pass

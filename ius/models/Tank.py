@@ -1,6 +1,6 @@
-from ius.models.Actuator import Actuator
-from ius.models.Sensor import Sensor
-from ius.State import State
+from .Actuator import Actuator
+from .Sensor import Sensor
+from .State import State
 
 
 class Tank:
