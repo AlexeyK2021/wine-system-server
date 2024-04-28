@@ -133,6 +133,31 @@ def end_drain_tank(tank):
     set_actuator(tank.output_pump, False)
 
 
+def emergency_stop(tank):
+    set_actuator(tank.input_valve, False)
+    set_actuator(tank.he_pump, False)
+    set_actuator(tank.he_input_valve, False)
+    set_actuator(tank.he_output_valve, False)
+    set_actuator(tank.output_pump, True)
+    set_actuator(tank.output_valve, True)
+    set_actuator(tank.co2_valve, True)
+
+
+def check_emergency_stop(tank):
+    input_valve_state = check_actuator(tank.input_valve)
+    he_pump_state = check_actuator(tank.he_pump)
+    he_input_valve_state = check_actuator(tank.he_input_valve)
+    he_output_valve_state = check_actuator(tank.he_output_valve)
+    output_pump_state = check_actuator(tank.output_pump)
+    output_valve_state = check_actuator(tank.output_valve)
+    co2_valve_state = check_actuator(tank.co2_valve)
+
+    return (
+            (not input_valve_state) and (not he_pump_state) and (not he_input_valve_state) and
+            (not he_output_valve_state) and output_pump_state and output_valve_state and co2_valve_state
+    )
+
+
 def print_curr_state(tank):
     print(
         f"Tank {tank.name}({tank.curr_state.name})\n"
@@ -197,26 +222,41 @@ def control_process(tank):
                 start_process_log(tank)
 
         elif tank.curr_state == State.EMERGENCY_STOP:
-            # TODO
-            pass
+            emergency_stop(tank)
+            #TODO
 
     elif tank.type_id == 2:
         if tank.curr_state == State.EMPTY_TANK_STATE:
-            # TODO
-            tank.curr_state = State.FILL_SF_TANK
+            init_tank(tank)
+            if check_init(tank):
+                end_process_log(tank, True)
+                tank.curr_state = State.FILL_SF_TANK
+                start_process_log(tank)
 
         elif tank.curr_state == State.FILL_SF_TANK:
-            # TODO
-            tank.curr_state = State.SLOW_FERMENTATION
+            fill_tank(tank)
+            if check_sensor(tank.down_level_sensor) and check_sensor(tank.up_level_sensor):
+                end_fill_tank(tank)
+                end_process_log(tank, True)
+                tank.curr_state = State.SLOW_FERMENTATION
+                start_process_log(tank)
 
         elif tank.curr_state == State.SLOW_FERMENTATION:
-            # TODO
-            tank.curr_state = State.DRAIN_SF_TANK
+            control_temp(tank)
+            control_pressure(tank)
+            if db_manager.get_remaining_time_of_process(tank.id) <= 0:
+                end_process_log(tank, True)
+                tank.curr_state = State.DRAIN_SF_TANK
+                start_process_log(tank)
 
         elif tank.curr_state == State.DRAIN_SF_TANK:
-            # TODO
-            tank.curr_state = State.START_STATE
+            drain_tank(tank)
+            if not check_sensor(tank.up_level_sensor) and not check_sensor(tank.down_level_sensor):
+                end_drain_tank(tank)
+                end_process_log(tank, True)
+                tank.curr_state = State.START_STATE
+                start_process_log(tank)
 
         elif tank.curr_state == State.EMERGENCY_STOP:
+            emergency_stop(tank)
             # TODO
-            pass
