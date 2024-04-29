@@ -39,7 +39,7 @@ async def check_admin(login):
 
 @app.get("/api/process/temp/{tank_id}")
 async def get_current_temp(tank_id):
-    temp, datetime = db_manager.get_current_temp(tank_id)
+    temp, datetime = db_manager.get_current_params(tank_id)
     return JSONResponse(status_code=200, content={
         "datetime": datetime.isoformat(),
         "value": temp

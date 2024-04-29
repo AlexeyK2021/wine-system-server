@@ -34,6 +34,7 @@ def auth_user(login: str, passwd: str):
     cur = con.cursor()
     cur.execute("SELECT check_auth(?, ?);", (login, passwd,))
     result = cur.fetchone()[0]
+    con.commit()
     con.close()
     return result
 
@@ -57,7 +58,7 @@ def get_status_by_login(login: str):
     return result
 
 
-def get_current_temp(tank_id):
+def get_current_params(tank_id):
     try:
         con = mariadb.connect(
             user=DB_USER,
@@ -70,8 +71,27 @@ def get_current_temp(tank_id):
         print(f"An error occurred while connecting to MariaDB: {ex}")
         return None
     cur = con.cursor()
-    cur.execute("CALL get_current_temp(?)", (tank_id,))
-    result = cur.fetchone()
+    cur.execute("CALL get_current_params(?)", (tank_id,))
+    result = cur.fetchall()
+    con.close()
+    return result[0][1], result[1][1], result[2][1], result[3][1]
+
+
+def get_current_actuators_state(tank_id):
+    try:
+        con = mariadb.connect(
+            user=DB_USER,
+            password=DB_PASSWD,
+            host=DB_IP,
+            port=DB_PORT,
+            database=DB_NAME
+        )
+    except mariadb.Error as ex:
+        print(f"An error occurred while connecting to MariaDB: {ex}")
+        return None
+    cur = con.cursor()
+    cur.execute("CALL get_current_actuators(?)", (tank_id,))
+    result = cur.fetchall()
     con.close()
     return result
 
@@ -140,5 +160,5 @@ def init_tank(tank_id, login: str):
 
 
 if __name__ == '__main__':
-    temp, datetime = get_current_temp(1)
-    print(datetime.isoformat())
+    # print(auth_user("admin1", "c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918"))
+    print(*get_current_params(1), sep="\n")

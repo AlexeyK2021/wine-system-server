@@ -117,10 +117,10 @@ def get_tanks():
 
     tanks = list()
     for t in result:
-        cur.execute("select * from sensor WHERE sensor.tank_id=? ORDER BY type_id;", (t[0],))
+        cur.execute("SELECT * FROM sensor WHERE sensor.tank_id=? ORDER BY type_id;", (t[0],))
         sensors = get_sensors(cur.fetchall())
         # print(*sensors)
-        cur.execute("select * from actuator WHERE actuator.tank_id = ? ORDER BY type_id;", (t[0],))
+        cur.execute("SELECT * FROM actuator WHERE actuator.tank_id = ? ORDER BY type_id;", (t[0],))
         actuators = get_actuators(cur.fetchall())
         # print(*actuators)
         tanks.append(Tank(
