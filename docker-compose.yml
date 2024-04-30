@@ -1,0 +1,40 @@
+services:
+  mariadb:
+    image: mariadb
+    container_name: ius-db
+    restart: always
+    environment:
+      MARIADB_ROOT_PASSWORD: 12345
+      MARIADB_DATABASE: IusDb4
+      MARIADB_USER: alexey
+      MARIADB_PASSWORD: 12345
+    ports:
+      - "3305:3306"
+    volumes:
+      - ./db/init_db.sql:/docker-entrypoint-initdb.d/init_db.sql
+      - ./db/data/:/var/lib/mysql
+    logging:
+      driver: none
+
+  # api:
+  #   build: ./api
+  #   container_name: ius-api
+  #   restart: always
+  #   ports:
+  #     - "5000:5000"
+  #   depends_on:
+  #     - mariadb
+
+  ius:
+    build: ./ius
+    container_name: ius-control
+    restart: always
+    depends_on:
+      - mariadb
+
+  emu:
+    build: ./opcua_emu
+    container_name: opcua-emu
+    restart: always
+    ports:
+      - "4841:4841"

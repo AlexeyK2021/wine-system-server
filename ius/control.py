@@ -20,19 +20,19 @@ def end_process_log(tank, result):
 
 
 def check_sensor(sensor):
-    value = opcua_manager.get_value(sensor.ip, sensor.port, sensor.node_id)
+    value = opcua_manager.get_value(sensor.ip, sensor.port, sensor.node_id, sensor.name)
     write_sensor_log(sensor, value)
     return value
 
 
-def check_actuator(actuator):
-    return opcua_manager.get_value(actuator.ip, actuator.port, actuator.state_node_id)
+def get_actuator_state(actuator):
+    return opcua_manager.get_value(actuator.ip, actuator.port, actuator.state_node_id, actuator.name)
 
 
 def set_actuator(actuator, value):
-    curr_state = check_actuator(actuator)
+    curr_state = get_actuator_state(actuator)
     if curr_state != value:
-        opcua_manager.set_value(actuator.ip, actuator.port, actuator.cmnd_node_id, value)
+        opcua_manager.set_value(actuator.ip, actuator.port, actuator.cmnd_node_id, value, actuator.name)
         write_actuator_log(actuator, value)
 
 
@@ -55,13 +55,13 @@ def init_tank(tank):
 
 
 def check_init(tank):
-    input_valve_state = check_actuator(tank.input_valve)
-    he_pump_state = check_actuator(tank.he_pump)
-    he_input_valve_state = check_actuator(tank.he_input_valve)
-    he_output_valve_state = check_actuator(tank.he_output_valve)
-    output_pump_state = check_actuator(tank.output_pump)
-    output_valve_state = check_actuator(tank.output_valve)
-    co2_valve_state = check_actuator(tank.co2_valve)
+    input_valve_state = get_actuator_state(tank.input_valve)
+    he_pump_state = get_actuator_state(tank.he_pump)
+    he_input_valve_state = get_actuator_state(tank.he_input_valve)
+    he_output_valve_state = get_actuator_state(tank.he_output_valve)
+    output_pump_state = get_actuator_state(tank.output_pump)
+    output_valve_state = get_actuator_state(tank.output_valve)
+    co2_valve_state = get_actuator_state(tank.co2_valve)
 
     return (
             (not input_valve_state) and (not he_pump_state) and (not he_input_valve_state) and
@@ -99,7 +99,7 @@ def control_pressure(tank):
     min_pres, max_pres = db_manager.get_parameter_interval(tank.pres_sensor.param_id)
 
     if pres > max_pres:
-        if not check_actuator(tank.co2_valve):
+        if not get_actuator_state(tank.co2_valve):
             set_actuator(tank.co2_valve, True)
         else:
             pass
@@ -132,13 +132,13 @@ def emergency_stop(tank):
 
 
 def check_emergency_stop(tank):
-    input_valve_state = check_actuator(tank.input_valve)
-    he_pump_state = check_actuator(tank.he_pump)
-    he_input_valve_state = check_actuator(tank.he_input_valve)
-    he_output_valve_state = check_actuator(tank.he_output_valve)
-    output_pump_state = check_actuator(tank.output_pump)
-    output_valve_state = check_actuator(tank.output_valve)
-    co2_valve_state = check_actuator(tank.co2_valve)
+    input_valve_state = get_actuator_state(tank.input_valve)
+    he_pump_state = get_actuator_state(tank.he_pump)
+    he_input_valve_state = get_actuator_state(tank.he_input_valve)
+    he_output_valve_state = get_actuator_state(tank.he_output_valve)
+    output_pump_state = get_actuator_state(tank.output_pump)
+    output_valve_state = get_actuator_state(tank.output_valve)
+    co2_valve_state = get_actuator_state(tank.co2_valve)
 
     return (
             (not input_valve_state) and (not he_pump_state) and (not he_input_valve_state) and
@@ -155,13 +155,13 @@ def print_curr_state(tank):
         f"\t Up Level: {check_sensor(tank.up_level_sensor)}\n"
         f"\t Down Level: {check_sensor(tank.down_level_sensor)}\n"
         f"Actuators:\n"
-        f"\t Input Valve:{check_actuator(tank.input_valve)}\n"
-        f"\t HE Pump:{check_actuator(tank.he_pump)}\n"
-        f"\t HE Input:{check_actuator(tank.he_input_valve)}\n"
-        f"\t HE Output:{check_actuator(tank.he_output_valve)}\n"
-        f"\t Output Pump:{check_actuator(tank.output_pump)}\n"
-        f"\t Output Valve:{check_actuator(tank.output_valve)}\n"
-        f"\t CO2 Valve: {check_actuator(tank.co2_valve)}\n"
+        f"\t Input Valve:{get_actuator_state(tank.input_valve)}\n"
+        f"\t HE Pump:{get_actuator_state(tank.he_pump)}\n"
+        f"\t HE Input:{get_actuator_state(tank.he_input_valve)}\n"
+        f"\t HE Output:{get_actuator_state(tank.he_output_valve)}\n"
+        f"\t Output Pump:{get_actuator_state(tank.output_pump)}\n"
+        f"\t Output Valve:{get_actuator_state(tank.output_valve)}\n"
+        f"\t CO2 Valve: {get_actuator_state(tank.co2_valve)}\n"
     )
 
 

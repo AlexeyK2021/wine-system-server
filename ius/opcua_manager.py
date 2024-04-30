@@ -1,7 +1,7 @@
 from opcua import Client
 
 
-def get_value(ip, port, node_id):
+def get_value(ip, port, node_id, name):
     client = Client(f"opc.tcp://{ip}:{port}")
     try:
         client.connect()
@@ -11,11 +11,11 @@ def get_value(ip, port, node_id):
         client.disconnect()
         return value
     except ConnectionRefusedError:
-        print("Cant connect to sensor")
+        print(f"{name} ({ip}:{port}) недоступен")
         return None
 
 
-def set_value(ip, port, node_id, value):
+def set_value(ip, port, node_id, value, name):
     client = Client(f"opc.tcp://{ip}:{port}")
     try:
         client.connect()
@@ -24,8 +24,19 @@ def set_value(ip, port, node_id, value):
         sensor.set_value(value)
         client.disconnect()
     except ConnectionRefusedError:
-        print("Cant connect to sensor")
+        print(f"{name} ({ip}:{port}) недоступен")
 
+
+def check_sensor(sensor):
+    if get_value(sensor.ip, sensor.port, sensor.node_id, sensor.name) is not None:
+        return True
+    return False
+
+
+def check_actuator(actuator):
+    if get_value(actuator.ip, actuator.port, actuator.state_node_id, actuator.name) is not None:
+        return True
+    return False
 
 # def set_value(actuator, value):
 #     # set_value(actuator.ip, actuator.port, actuator.cmnd_node_id, value)

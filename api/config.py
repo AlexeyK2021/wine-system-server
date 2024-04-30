@@ -1,8 +1,8 @@
 # DB
-DB_IP = "192.168.1.103"
-DB_PORT = 3306
+DB_IP = "mariadb"
+DB_PORT = 3305
 DB_USER = "alexey"
-DB_PASSWD = "Y8D5H9Z1X3"
+DB_PASSWD = "12345"
 DB_NAME = "IusDb4"
 
 # API

@@ -223,3 +223,17 @@ def get_parameter_interval(param_id):
     con.close()
     # print(result)
     return result
+
+
+def check_db():
+    try:
+        con = mariadb.connect(
+            user=DB_USER,
+            password=DB_PASSWD,
+            host=DB_IP,
+            port=DB_PORT,
+            database=DB_NAME
+        )
+        return True
+    except mariadb.Error:
+        return False
