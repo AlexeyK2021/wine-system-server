@@ -1,7 +1,11 @@
+import datetime
+from asyncio import sleep
+
 import uvicorn
-from fastapi import FastAPI
+from fastapi import FastAPI, WebSocket
 from fastapi.responses import JSONResponse, Response
 
+from api.influx_db_manager import get_tank_state
 from config import API_PORT
 import db_manager
 
@@ -60,6 +64,16 @@ def emergency_stop(tank_id: int, login):
 @app.get("/api/process/start/tank={tank_id}&login={login}")
 async def init_tank(tank_id: int, login: str):
     db_manager.init_tank(tank_id, login)
+
+
+@app.websocket("/api/tanks/ws")
+async def get_tank_info(websocket: WebSocket):
+    await websocket.accept()
+    while True:
+        tank = await websocket.receive_text()
+        data = get_tank_state(int(tank))
+        await websocket.send_text(f"Tank {tank}: {data}")
+        await sleep(0.5)
 
 
 # @app.post("/api/auth/")
