@@ -32,13 +32,13 @@ async def auth(login, passwd):
         return Response(status_code=401)
 
 
-@app.get("/api/user/check/{login}")
-async def check_admin(login):
-    is_admin = db_manager.get_status_by_login(login)
-    if is_admin:
-        return JSONResponse(status_code=200, content={"admin": True})
-    else:
-        return JSONResponse(status_code=200, content={"admin": False})
+# @app.get("/api/user/check/{login}")
+# async def check_admin(login):
+#     is_admin = db_manager.get_status_by_login(login)
+#     if is_admin:
+#         return JSONResponse(status_code=200, content={"admin": True})
+#     else:
+#         return JSONResponse(status_code=200, content={"admin": False})
 
 
 @app.get("/api/process/temp/{tank_id}")
@@ -72,7 +72,7 @@ async def get_tank_info(websocket: WebSocket):
     while True:
         tank = await websocket.receive_text()
         data = get_tank_state(int(tank))
-        await websocket.send_text(f"Tank {tank}: {data}")
+        await websocket.send_text(data)
         await sleep(0.5)
 
 

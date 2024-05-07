@@ -15,10 +15,7 @@ query_api = client.query_api()
 
 
 def get_tank_state(tank_id):
-    data = {"tank_id": tank_id,
-            "params": get_current_parameters(tank_id),
-            "actuators": get_current_actuators(tank_id)
-            }
+    data = {"tank_id": tank_id, "params": get_current_parameters(tank_id), "actuators": get_current_actuators(tank_id)}
     json_object = json.dumps(data, indent=4)
     return json_object
 
@@ -137,7 +134,7 @@ def generate_data():
 if __name__ == '__main__':
     # print(get_current_parameters(1))
     # print(get_current_actuators(1))
-    print(get_tank_state(1))
+    # print(get_tank_state(1))
     generate_data()
 # query = """from(bucket: "Ius")
 #  |> range(start: -10m)
