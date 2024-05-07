@@ -27,13 +27,12 @@ def get_current_parameters(tank_id):
     param_name = ["Temperature", "Pressure"]
     param_values = {}
     for name in param_name:
-        query = f"""from(bucket: "Ius")
+        query = f"""from(bucket: "{INF_BUCKET}")
   |> range(start: -30d, stop: -5s)
   |> filter(fn: (r) => r["_measurement"] == "Tank{tank_id}")
   |> filter(fn: (r) => r["Type"] == "Sensor")
   |> filter(fn: (r) => r["Name"] == "{name}")
   |> filter(fn: (r) => r["_field"] == "Value")
-  |> aggregateWindow(every: 5s, fn: mean, createEmpty: false)
   |> last()"""
         table = query_api.query(query, org=INF_ORG)
         param_values[name] = table[0].records[0].get_value()
@@ -55,17 +54,16 @@ def get_current_actuators(tank_id):
                      "Output_Valve", "HE_Pump", "Output_Pump"]
     actuator_values = {}
     for name in actuator_name:
-        query = f"""from(bucket: "Ius")
+        query = f"""from(bucket: "{INF_BUCKET}")
   |> range(start: -30d, stop: -5s)
   |> filter(fn: (r) => r["_measurement"] == "Tank{tank_id}")
   |> filter(fn: (r) => r["Type"] == "Actuator")
   |> filter(fn: (r) => r["Name"] == "{name}")
   |> filter(fn: (r) => r["_field"] == "State")
-  |> aggregateWindow(every: 5s, fn: mean, createEmpty: false)
   |> last()"""
         table = query_api.query(query, org=INF_ORG)
         actuator_values[name] = table[0].records[0].get_value()
-        return actuator_values
+    return actuator_values
 
 
 def generate_data():
@@ -139,7 +137,7 @@ def generate_data():
 if __name__ == '__main__':
     # print(get_current_parameters(1))
     # print(get_current_actuators(1))
-    # print(get_tank_state(1))
+    print(get_tank_state(1))
     generate_data()
 # query = """from(bucket: "Ius")
 #  |> range(start: -10m)
