@@ -1,16 +1,15 @@
-import datetime
 import json
 import random
 
-import influxdb_client, os, time
-from influxdb_client import InfluxDBClient, Point, WritePrecision
+import influxdb_client
+import time
+from influxdb_client import Point
 from influxdb_client.client.write_api import SYNCHRONOUS
 
-token = "enu1mls7VsdMIyOzVz43qIAfgmGrHyCP2rqZebU0Z7n4HqLT1CWpNwBUjccwxcdoe8wEOOwdkCkHksNUbfBp4g=="
-org = "Mirea"
-url = "http://192.168.1.112:8086"
-client = influxdb_client.InfluxDBClient(url=url, token=token, org=org)
-bucket = "Ius"
+from api.config import INF_PORT, INF_IP, INF_ORG, INF_TOKEN, INF_BUCKET
+
+url = f"http://{INF_IP}:{INF_PORT}"
+client = influxdb_client.InfluxDBClient(url=url, token=INF_TOKEN, org=INF_ORG)
 write_api = client.write_api(write_options=SYNCHRONOUS)
 query_api = client.query_api()
 
@@ -36,7 +35,7 @@ def get_current_parameters(tank_id):
   |> filter(fn: (r) => r["_field"] == "Value")
   |> aggregateWindow(every: 5s, fn: mean, createEmpty: false)
   |> last()"""
-        table = query_api.query(query, org="Mirea")
+        table = query_api.query(query, org=INF_ORG)
         param_values[name] = table[0].records[0].get_value()
 
     #   query = f"""from(bucket: "Ius")
@@ -64,7 +63,7 @@ def get_current_actuators(tank_id):
   |> filter(fn: (r) => r["_field"] == "State")
   |> aggregateWindow(every: 5s, fn: mean, createEmpty: false)
   |> last()"""
-        table = query_api.query(query, org="Mirea")
+        table = query_api.query(query, org=INF_ORG)
         actuator_values[name] = table[0].records[0].get_value()
         return actuator_values
 
@@ -125,15 +124,15 @@ def generate_data():
             .tag("Name", "Output_Pump")
             .field("State", random.randrange(0, 2))
         )
-        write_api.write(bucket=bucket, org="Mirea", record=temp)
-        write_api.write(bucket=bucket, org="Mirea", record=pres)
-        write_api.write(bucket=bucket, org="Mirea", record=input)
-        # write_api.write(bucket=bucket, org="Mirea", record=heiv)
-        # write_api.write(bucket=bucket, org="Mirea", record=heov)
-        # write_api.write(bucket=bucket, org="Mirea", record=co2)
-        # write_api.write(bucket=bucket, org="Mirea", record=ov)
-        # write_api.write(bucket=bucket, org="Mirea", record=hep)
-        # write_api.write(bucket=bucket, org="Mirea", record=op)
+        write_api.write(bucket=INF_BUCKET, org=INF_ORG, record=temp)
+        write_api.write(bucket=INF_BUCKET, org=INF_ORG, record=pres)
+        write_api.write(bucket=INF_BUCKET, org=INF_ORG, record=input)
+        write_api.write(bucket=INF_BUCKET, org=INF_ORG, record=heiv)
+        write_api.write(bucket=INF_BUCKET, org=INF_ORG, record=heov)
+        write_api.write(bucket=INF_BUCKET, org=INF_ORG, record=co2)
+        write_api.write(bucket=INF_BUCKET, org=INF_ORG, record=ov)
+        write_api.write(bucket=INF_BUCKET, org=INF_ORG, record=hep)
+        write_api.write(bucket=INF_BUCKET, org=INF_ORG, record=op)
         time.sleep(1)
 
 
