@@ -1,6 +1,6 @@
 # DB
 DB_IP = "192.168.1.113"
-DB_PORT = 3305
+DB_PORT = 3306
 DB_USER = "ius"
 DB_PASSWD = "12345"
 DB_NAME = "IusDb4"

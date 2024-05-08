@@ -1,13 +1,12 @@
-import datetime
 from asyncio import sleep
 
 import uvicorn
 from fastapi import FastAPI, WebSocket
-from fastapi.responses import JSONResponse, Response
+from fastapi.responses import Response, JSONResponse
 
-from api.influx_db_manager import get_tank_state
-from config import API_PORT
 import db_manager
+import influx_db_manager
+from config import API_PORT
 
 app = FastAPI()
 
@@ -41,18 +40,22 @@ async def auth(login, passwd):
 #         return JSONResponse(status_code=200, content={"admin": False})
 
 
-@app.get("/api/process/temp/{tank_id}")
-async def get_current_temp(tank_id):
-    temp, datetime = db_manager.get_current_params(tank_id)
-    return JSONResponse(status_code=200, content={
-        "datetime": datetime.isoformat(),
-        "value": temp
-    })
+# @app.get("/api/process/temp/{tank_id}")
+# async def get_current_temp(tank_id):
+#     temp, datetime = db_manager.get_current_params(tank_id)
+#     return JSONResponse(status_code=200, content={
+#         "datetime": datetime.isoformat(),
+#         "value": temp
+#     })
 
 
-@app.get("/api/process/info/{tank_id}")
-async def get_info(tank_id):
-    pass
+# @app.get("/api/process/info/{tank_id}")
+# async def get_info(tank_id):
+#     pass
+
+@app.get("/api/tanks")
+async def get_tanks():
+    return JSONResponse(status_code=200, content=db_manager.get_tanks())
 
 
 @app.get("/api/process/stop/tank={tank_id}&login={login}")
@@ -71,7 +74,7 @@ async def get_tank_info(websocket: WebSocket):
     await websocket.accept()
     while True:
         tank = await websocket.receive_text()
-        data = get_tank_state(int(tank))
+        data = influx_db_manager.get_tank_state(int(tank))
         await websocket.send_text(data)
         await sleep(0.5)
 

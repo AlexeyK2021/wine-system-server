@@ -39,61 +39,61 @@ def auth_user(login: str, passwd: str):
     return result
 
 
-def get_status_by_login(login: str):
-    try:
-        con = mariadb.connect(
-            user=DB_USER,
-            password=DB_PASSWD,
-            host=DB_IP,
-            port=DB_PORT,
-            database=DB_NAME
-        )
-    except mariadb.Error as ex:
-        print(f"An error occurred while connecting to MariaDB: {ex}")
-        return None
-    cur = con.cursor()
-    cur.execute("select ut.is_admin FROM user JOIN user_type AS ut ON user.type_id=ut.id WHERE user.login=?;", (login,))
-    result = cur.fetchone()[0]
-    con.close()
-    return result
+# def get_status_by_login(login: str):
+#     try:
+#         con = mariadb.connect(
+#             user=DB_USER,
+#             password=DB_PASSWD,
+#             host=DB_IP,
+#             port=DB_PORT,
+#             database=DB_NAME
+#         )
+#     except mariadb.Error as ex:
+#         print(f"An error occurred while connecting to MariaDB: {ex}")
+#         return None
+#     cur = con.cursor()
+#     cur.execute("select ut.is_admin FROM user JOIN user_type AS ut ON user.type_id=ut.id WHERE user.login=?;", (login,))
+#     result = cur.fetchone()[0]
+#     con.close()
+#     return result
 
 
-def get_current_params(tank_id):
-    try:
-        con = mariadb.connect(
-            user=DB_USER,
-            password=DB_PASSWD,
-            host=DB_IP,
-            port=DB_PORT,
-            database=DB_NAME
-        )
-    except mariadb.Error as ex:
-        print(f"An error occurred while connecting to MariaDB: {ex}")
-        return None
-    cur = con.cursor()
-    cur.execute("CALL get_current_params(?)", (tank_id,))
-    result = cur.fetchall()
-    con.close()
-    return result[0][1], result[1][1], result[2][1], result[3][1]
+# def get_current_params(tank_id):
+#     try:
+#         con = mariadb.connect(
+#             user=DB_USER,
+#             password=DB_PASSWD,
+#             host=DB_IP,
+#             port=DB_PORT,
+#             database=DB_NAME
+#         )
+#     except mariadb.Error as ex:
+#         print(f"An error occurred while connecting to MariaDB: {ex}")
+#         return None
+#     cur = con.cursor()
+#     cur.execute("CALL get_current_params(?)", (tank_id,))
+#     result = cur.fetchall()
+#     con.close()
+#     return result[0][1], result[1][1], result[2][1], result[3][1]
 
 
-def get_current_actuators_state(tank_id):
-    try:
-        con = mariadb.connect(
-            user=DB_USER,
-            password=DB_PASSWD,
-            host=DB_IP,
-            port=DB_PORT,
-            database=DB_NAME
-        )
-    except mariadb.Error as ex:
-        print(f"An error occurred while connecting to MariaDB: {ex}")
-        return None
-    cur = con.cursor()
-    cur.execute("CALL get_current_actuators(?)", (tank_id,))
-    result = cur.fetchall()
-    con.close()
-    return result
+# def get_current_actuators_state(tank_id):
+#     try:
+#         con = mariadb.connect(
+#             user=DB_USER,
+#             password=DB_PASSWD,
+#             host=DB_IP,
+#             port=DB_PORT,
+#             database=DB_NAME
+#         )
+#     except mariadb.Error as ex:
+#         print(f"An error occurred while connecting to MariaDB: {ex}")
+#         return None
+#     cur = con.cursor()
+#     cur.execute("CALL get_current_actuators(?)", (tank_id,))
+#     result = cur.fetchall()
+#     con.close()
+#     return result
 
 
 def write_user_log(login: str, actionId: int):
@@ -159,6 +159,29 @@ def init_tank(tank_id, login: str):
     con.close()
 
 
+def get_tanks():
+    try:
+        con = mariadb.connect(
+            user=DB_USER,
+            password=DB_PASSWD,
+            host=DB_IP,
+            port=DB_PORT,
+            database=DB_NAME
+        )
+    except mariadb.Error as ex:
+        print(f"An error occurred while connecting to MariaDB: {ex}")
+        return None
+    cur = con.cursor()
+    cur.execute("select * from tank;")
+    res = cur.fetchall()
+    data = []
+    for tank in res:
+        data.append({"id": tank[0], "name": tank[1], "type_id": tank[2]})
+    return data
+
+
 if __name__ == '__main__':
+    # get_tanks()
+    pass
     # print(auth_user("admin1", "c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918"))
-    print(*get_current_params(1), sep="\n")
+    # print(*get_current_params(1), sep="\n")
