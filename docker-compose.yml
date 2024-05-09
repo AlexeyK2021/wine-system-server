@@ -12,29 +12,42 @@ services:
       - "3305:3306"
     volumes:
       - ./db/init_db.sql:/docker-entrypoint-initdb.d/init_db.sql
-      - ./db/data/:/var/lib/mysql
+      - ./db/maria_data/:/var/lib/mysql
     logging:
       driver: none
 
-  # api:
-  #   build: ./api
-  #   container_name: ius-api
-  #   restart: always
-  #   ports:
-  #     - "5000:5000"
-  #   depends_on:
-  #     - mariadb
-
-  ius:
-    build: ./ius
-    container_name: ius-control
+  influx:
+    image: influxdb
+    container_name: influx
     restart: always
-    depends_on:
-      - mariadb
+    environment:
+      TZ: Europe/Moscow
+    ports:
+      - "8086:8086"
+    volumes:
+      - ./db/influx/data/:/var/lib/influxdb2
+      - ./db/influx/config/:/etc/influxdb2
 
-  emu:
-    build: ./opcua_emu
-    container_name: opcua-emu
+  api:
+    build: ./api
+    container_name: ius-api
     restart: always
     ports:
-      - "4841:4841"
+      - "5000:5000"
+    depends_on:
+      - mariadb
+      - influx
+
+#  ius:
+#    build: ./ius
+#    container_name: ius-control
+#    restart: always
+#    depends_on:
+#      - mariadb
+
+#  emu:
+#    build: ./opcua_emu
+#    container_name: opcua-emu
+#    restart: always
+#    ports:
+#      - "4841:4841"

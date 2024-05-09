@@ -1,3 +1,5 @@
 fastapi
 uvicorn
 mariadb
+influxdb-client
+influxdb
