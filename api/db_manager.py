@@ -1,19 +1,3 @@
-# from sqlalchemy import create_engine
-# from sqlalchemy.orm import Session
-# from config import DB_USER, DB_PASSWD, DB_IP, DB_NAME
-# from db.models.BaseModelClass import BaseModelClass
-# from db.models.User import User
-#
-# engine = create_engine(f"mysql+pymysql://{DB_USER}:{DB_PASSWD}@{DB_IP}/{DB_NAME}")
-# BaseModelClass.metadata.create_all(bind=engine)
-#
-#
-# def get_user_by_login(login: str):
-#     with (Session(autoflush=False, bind=engine)) as db:
-#         user = db.query(User).filter(User.login == login)[0]
-#         return user
-import sys
-
 import mariadb
 
 from config import DB_PASSWD, DB_USER, DB_IP, DB_PORT, DB_NAME
@@ -37,63 +21,6 @@ def auth_user(login: str, passwd: str):
     con.commit()
     con.close()
     return result
-
-
-# def get_status_by_login(login: str):
-#     try:
-#         con = mariadb.connect(
-#             user=DB_USER,
-#             password=DB_PASSWD,
-#             host=DB_IP,
-#             port=DB_PORT,
-#             database=DB_NAME
-#         )
-#     except mariadb.Error as ex:
-#         print(f"An error occurred while connecting to MariaDB: {ex}")
-#         return None
-#     cur = con.cursor()
-#     cur.execute("select ut.is_admin FROM user JOIN user_type AS ut ON user.type_id=ut.id WHERE user.login=?;", (login,))
-#     result = cur.fetchone()[0]
-#     con.close()
-#     return result
-
-
-# def get_current_params(tank_id):
-#     try:
-#         con = mariadb.connect(
-#             user=DB_USER,
-#             password=DB_PASSWD,
-#             host=DB_IP,
-#             port=DB_PORT,
-#             database=DB_NAME
-#         )
-#     except mariadb.Error as ex:
-#         print(f"An error occurred while connecting to MariaDB: {ex}")
-#         return None
-#     cur = con.cursor()
-#     cur.execute("CALL get_current_params(?)", (tank_id,))
-#     result = cur.fetchall()
-#     con.close()
-#     return result[0][1], result[1][1], result[2][1], result[3][1]
-
-
-# def get_current_actuators_state(tank_id):
-#     try:
-#         con = mariadb.connect(
-#             user=DB_USER,
-#             password=DB_PASSWD,
-#             host=DB_IP,
-#             port=DB_PORT,
-#             database=DB_NAME
-#         )
-#     except mariadb.Error as ex:
-#         print(f"An error occurred while connecting to MariaDB: {ex}")
-#         return None
-#     cur = con.cursor()
-#     cur.execute("CALL get_current_actuators(?)", (tank_id,))
-#     result = cur.fetchall()
-#     con.close()
-#     return result
 
 
 def write_user_log(login: str, actionId: int):
@@ -196,7 +123,6 @@ def get_current_tank_state(tank_id: int):
     cur.execute("CALL get_tank_last_state(?)", (tank_id,))
     result = cur.fetchone()
     con.close()
-    print(result)
     process_name = result[3]
     if result[1] == 2:
         process_name += "\n(Экстренная остановка)"

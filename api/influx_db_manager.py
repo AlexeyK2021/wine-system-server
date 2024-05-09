@@ -47,3 +47,4 @@ def get_current_actuators(tank_id):
         table = query_api.query(query, org=INF_ORG)
         actuator_values[name] = table[0].records[0].get_value()
     return actuator_values
+

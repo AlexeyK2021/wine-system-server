@@ -4,6 +4,7 @@ from asyncio import sleep
 import uvicorn
 from fastapi import FastAPI, WebSocket
 from fastapi.responses import Response, JSONResponse
+from starlette.websockets import WebSocketDisconnect
 
 import db_manager
 import influx_db_manager
@@ -73,15 +74,18 @@ async def init_tank(tank_id: int):
 
 @app.websocket("/api/tanks/ws")
 async def get_tank_info(websocket: WebSocket):
-    await websocket.accept()
-    while True:
-        tank_id = int(await websocket.receive_text())
-        eq_data = influx_db_manager.get_tank_state(tank_id)
-        tank_state = db_manager.get_current_tank_state(tank_id)
-        data = {"tank_id": tank_id} | tank_state | eq_data
-        json_data = json.dumps(data, indent=4)
-        await websocket.send_text(json_data)
-        await sleep(0.5)
+    try:
+        await websocket.accept()
+        while True:
+            tank_id = int(await websocket.receive_text())
+            eq_data = influx_db_manager.get_tank_state(tank_id)
+            tank_state = db_manager.get_current_tank_state(tank_id)
+            data = {"tank_id": tank_id} | tank_state | eq_data
+            json_data = json.dumps(data, indent=4)
+            await websocket.send_text(json_data)
+            await sleep(0.5)
+    except WebSocketDisconnect:
+        print(f"Websocket on {websocket.base_url.hostname} disconnected")
 
 
 # @app.post("/api/auth/")
