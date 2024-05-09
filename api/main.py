@@ -1,3 +1,4 @@
+import json
 from asyncio import sleep
 
 import uvicorn
@@ -58,24 +59,28 @@ async def get_tanks():
     return JSONResponse(status_code=200, content=db_manager.get_tanks())
 
 
-@app.get("/api/process/stop/tank={tank_id}&login={login}")
-def emergency_stop(tank_id: int, login):
-    print(f"tank{tank_id} login:{login}")
-    db_manager.emergency_stop(tank_id, login)
+@app.get("/api/process/stop/tank={tank_id}")
+def emergency_stop(tank_id: int):
+    db_manager.emergency_stop(tank_id)
+    return Response(status_code=200)
 
 
-@app.get("/api/process/start/tank={tank_id}&login={login}")
-async def init_tank(tank_id: int, login: str):
-    db_manager.init_tank(tank_id, login)
+@app.get("/api/process/start/tank={tank_id}")
+async def init_tank(tank_id: int):
+    db_manager.init_tank(tank_id)
+    return Response(status_code=200)
 
 
 @app.websocket("/api/tanks/ws")
 async def get_tank_info(websocket: WebSocket):
     await websocket.accept()
     while True:
-        tank = await websocket.receive_text()
-        data = influx_db_manager.get_tank_state(int(tank))
-        await websocket.send_text(data)
+        tank_id = int(await websocket.receive_text())
+        eq_data = influx_db_manager.get_tank_state(tank_id)
+        tank_state = db_manager.get_current_tank_state(tank_id)
+        data = {"tank_id": tank_id} | tank_state | eq_data
+        json_data = json.dumps(data, indent=4)
+        await websocket.send_text(json_data)
         await sleep(0.5)
 
 

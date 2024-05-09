@@ -15,9 +15,10 @@ query_api = client.query_api()
 
 
 def get_tank_state(tank_id):
-    data = {"tank_id": tank_id, "params": get_current_parameters(tank_id), "actuators": get_current_actuators(tank_id)}
-    json_object = json.dumps(data, indent=4)
-    return json_object
+    return {
+        "params": get_current_parameters(tank_id),
+        "actuators": get_current_actuators(tank_id)
+    }
 
 
 def get_current_parameters(tank_id):
