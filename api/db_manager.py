@@ -23,7 +23,27 @@ def auth_user(login: str, passwd: str):
     return result
 
 
-def write_user_log(login: str, actionId: int):
+# def write_user_log(login: str, actionId: int):
+#     try:
+#         con = mariadb.connect(
+#             user=DB_USER,
+#             password=DB_PASSWD,
+#             host=DB_IP,
+#             port=DB_PORT,
+#             database=DB_NAME
+#         )
+#     except mariadb.Error as ex:
+#         print(f"An error occurred while connecting to MariaDB: {ex}")
+#         return None
+#     cur = con.cursor()
+#     cur.execute("SELECT id FROM user WHERE login=?;", (login,))
+#     userId = cur.fetchone()[0]
+#     cur.execute("INSERT INTO user_log(user_id, action_id) VALUES (?, ?);", (userId, actionId))
+#     con.commit()
+#     con.close()
+
+
+def emergency_stop(tank_id: int, login):
     try:
         con = mariadb.connect(
             user=DB_USER,
@@ -37,34 +57,14 @@ def write_user_log(login: str, actionId: int):
         return None
     cur = con.cursor()
     cur.execute("SELECT id FROM user WHERE login=?;", (login,))
-    userId = cur.fetchone()[0]
-    cur.execute("INSERT INTO user_log(user_id, action_id) VALUES (?, ?);", (userId, actionId))
-    con.commit()
-    con.close()
-
-
-def emergency_stop(tank_id: int):
-    try:
-        con = mariadb.connect(
-            user=DB_USER,
-            password=DB_PASSWD,
-            host=DB_IP,
-            port=DB_PORT,
-            database=DB_NAME
-        )
-    except mariadb.Error as ex:
-        print(f"An error occurred while connecting to MariaDB: {ex}")
-        return None
-    cur = con.cursor()
-    # cur.execute("SELECT id FROM user WHERE login=?;", (login,))
-    # user_id = cur.fetchone()[0]
-    # cur.execute("INSERT INTO user_log(user_id, action_id) VALUES (?, 3);", (user_id,))
+    user_id = cur.fetchone()[0]
+    cur.execute("INSERT INTO user_log(user_id, action_id) VALUES (?, 3);", (user_id,))
     cur.execute("UPDATE process_log SET `end`=NOW(), result_id=2 WHERE tank_id=? AND `end` is NULL;", (tank_id,))
     con.commit()
     con.close()
 
 
-def init_tank(tank_id):
+def init_tank(tank_id, login):
     try:
         con = mariadb.connect(
             user=DB_USER,
@@ -77,9 +77,9 @@ def init_tank(tank_id):
         print(f"An error occurred while connecting to MariaDB: {ex}")
         return None
     cur = con.cursor()
-    # cur.execute("SELECT id FROM user WHERE login=?;", (login,))
-    # user_id = cur.fetchone()[0]
-    # cur.execute("INSERT INTO user_log(user_id, action_id) VALUES (?, 4);", (user_id,))
+    cur.execute("SELECT id FROM user WHERE login=?;", (login,))
+    user_id = cur.fetchone()[0]
+    cur.execute("INSERT INTO user_log(user_id, action_id) VALUES (?, 4);", (user_id,))
     cur.execute("UPDATE process_log SET `end`=NOW() WHERE tank_id=? AND `end` is NULL;", (tank_id,))
     cur.execute("INSERT INTO process_log(tank_id, process_id) VALUES (?,1);", (tank_id,))
     con.commit()
