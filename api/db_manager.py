@@ -207,8 +207,4 @@ def get_current_tank_state(tank_id: int):
 
 
 if __name__ == '__main__':
-    # get_tanks()
     get_current_tank_state(1)
-    pass
-    # print(auth_user("admin1", "c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918"))
-    # print(*get_current_params(1), sep="\n")
