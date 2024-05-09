@@ -17,7 +17,7 @@ def get_tank_state(tank_id):
 
 
 def get_current_parameters(tank_id):
-    param_name = ["Temperature", "Pressure"]
+    param_name = ["Temperature", "Pressure", "High_Level_Sensor", "Low_Level_Sensor"]
     param_values = {}
     for name in param_name:
         query = f"""from(bucket: "{INF_BUCKET}")

@@ -14,7 +14,7 @@ query_api = client.query_api()
 
 
 def generate_data():
-    for value in range(10):
+    for value in range(1000):
         temp = (
             Point("Tank1")
             .tag("Type", "Sensor")
@@ -26,6 +26,18 @@ def generate_data():
             .tag("Type", "Sensor")
             .tag("Name", "Pressure")
             .field("Value", random.randrange(95, 105))
+        )
+        hl = (
+            Point("Tank1")
+            .tag("Type", "Sensor")
+            .tag("Name", "High_Level_Sensor")
+            .field("Value", random.randrange(0, 2))
+        )
+        ll = (
+            Point("Tank1")
+            .tag("Type", "Sensor")
+            .tag("Name", "Low_Level_Sensor")
+            .field("Value", random.randrange(0, 2))
         )
         input = (
             Point("Tank1")
@@ -71,6 +83,9 @@ def generate_data():
         )
         write_api.write(bucket=INF_BUCKET, org=INF_ORG, record=temp)
         write_api.write(bucket=INF_BUCKET, org=INF_ORG, record=pres)
+        write_api.write(bucket=INF_BUCKET, org=INF_ORG, record=hl)
+        write_api.write(bucket=INF_BUCKET, org=INF_ORG, record=ll)
+
         write_api.write(bucket=INF_BUCKET, org=INF_ORG, record=input)
         write_api.write(bucket=INF_BUCKET, org=INF_ORG, record=heiv)
         write_api.write(bucket=INF_BUCKET, org=INF_ORG, record=heov)
