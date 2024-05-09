@@ -26,7 +26,7 @@ def get_current_parameters(tank_id):
     param_values = {}
     for name in param_name:
         query = f"""from(bucket: "{INF_BUCKET}")
-  |> range(start: -30d, stop: -5s)
+  |> range(start: -10s, stop: now())
   |> filter(fn: (r) => r["_measurement"] == "Tank{tank_id}")
   |> filter(fn: (r) => r["Type"] == "Sensor")
   |> filter(fn: (r) => r["Name"] == "{name}")
@@ -53,7 +53,7 @@ def get_current_actuators(tank_id):
     actuator_values = {}
     for name in actuator_name:
         query = f"""from(bucket: "{INF_BUCKET}")
-  |> range(start: -30d, stop: -5s)
+  |> range(start: -30d, stop: now())
   |> filter(fn: (r) => r["_measurement"] == "Tank{tank_id}")
   |> filter(fn: (r) => r["Type"] == "Actuator")
   |> filter(fn: (r) => r["Name"] == "{name}")

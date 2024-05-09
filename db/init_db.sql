@@ -1,8 +1,8 @@
 -- MySQL dump 10.13  Distrib 8.0.19, for Win64 (x86_64)
 --
--- Host: 192.168.1.112    Database: IusDb4
+-- Host: 192.168.1.113    Database: IusDb4
 -- ------------------------------------------------------
--- Server version	11.3.2-MariaDB-1:11.3.2+maria~ubu2204
+-- Server version	5.5.5-10.6.16-MariaDB-0ubuntu0.22.04.1
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
@@ -177,7 +177,7 @@ CREATE TABLE `process_log` (
   CONSTRAINT `process_log_process_FK` FOREIGN KEY (`process_id`) REFERENCES `process` (`id`),
   CONSTRAINT `process_log_result_code_FK` FOREIGN KEY (`result_id`) REFERENCES `result_code` (`id`),
   CONSTRAINT `process_log_tank_FK` FOREIGN KEY (`tank_id`) REFERENCES `tank` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=100 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=106 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -186,6 +186,7 @@ CREATE TABLE `process_log` (
 
 LOCK TABLES `process_log` WRITE;
 /*!40000 ALTER TABLE `process_log` DISABLE KEYS */;
+INSERT INTO `process_log` VALUES (100,'2024-05-09 09:50:56',NULL,NULL,1,NULL,9);
 /*!40000 ALTER TABLE `process_log` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -326,7 +327,7 @@ CREATE TABLE `tank` (
 
 LOCK TABLES `tank` WRITE;
 /*!40000 ALTER TABLE `tank` DISABLE KEYS */;
-INSERT INTO `tank` VALUES (1,'ББ1',1),(2,'ТБ1',2);
+INSERT INTO `tank` VALUES (1,'ББ1',1);
 /*!40000 ALTER TABLE `tank` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
@@ -391,7 +392,7 @@ CREATE TABLE `user` (
   PRIMARY KEY (`id`),
   KEY `user_user_type_FK` (`type_id`),
   CONSTRAINT `user_user_type_FK` FOREIGN KEY (`type_id`) REFERENCES `user_type` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -400,7 +401,7 @@ CREATE TABLE `user` (
 
 LOCK TABLES `user` WRITE;
 /*!40000 ALTER TABLE `user` DISABLE KEYS */;
-INSERT INTO `user` VALUES (1,'admin','admin','8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918',1);
+INSERT INTO `user` VALUES (1,'admin','admin','8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918',1),(3,'alexey','alexey','d217e1716cb7b36f8be65117f625a1e39d22fd585528632391bb74310a4f255d',2),(4,'test','test','03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4',2);
 /*!40000 ALTER TABLE `user` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -447,7 +448,7 @@ CREATE TABLE `user_log` (
   KEY `user_log_user_action_FK` (`action_id`),
   CONSTRAINT `user_log_user_FK` FOREIGN KEY (`user_id`) REFERENCES `user` (`id`),
   CONSTRAINT `user_log_user_action_FK` FOREIGN KEY (`action_id`) REFERENCES `user_action` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=38 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=57 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -498,7 +499,7 @@ UNLOCK TABLES;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'IGNORE_SPACE,STRICT_TRANS_TABLES,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-CREATE DEFINER=`alexey`@`%` FUNCTION `check_auth`(login_in VARCHAR(64), passwd_in VARCHAR(64)) RETURNS tinyint(1)
+CREATE DEFINER=`ius`@`%` FUNCTION `check_auth`(login_in VARCHAR(64), passwd_in VARCHAR(64)) RETURNS tinyint(1)
 BEGIN
 
 	DECLARE passwd VARCHAR(64);
@@ -543,17 +544,13 @@ DELIMITER ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'IGNORE_SPACE,STRICT_TRANS_TABLES,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-CREATE DEFINER=`alexey`@`%` PROCEDURE `get_tank_last_state`(IN tankId INT)
+CREATE DEFINER=`ius`@`%` PROCEDURE `get_tank_last_state`(IN tankId INT)
 BEGIN
-
-	SELECT * FROM process_log AS pl
-
+	SELECT pl.id, pl.result_id, pl.process_id, p.name FROM process_log AS pl
+	JOIN process AS p ON pl.process_id = p.id
 	WHERE tank_id = tankId
-
-	ORDER BY id DESC
-
+	ORDER BY pl.id DESC
 	LIMIT 1;
-
 END ;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
@@ -570,4 +567,4 @@ DELIMITER ;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2024-05-07 16:41:46
+-- Dump completed on 2024-05-09 15:10:24
