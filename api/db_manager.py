@@ -23,26 +23,6 @@ def auth_user(login: str, passwd: str):
     return result
 
 
-# def write_user_log(login: str, actionId: int):
-#     try:
-#         con = mariadb.connect(
-#             user=DB_USER,
-#             password=DB_PASSWD,
-#             host=DB_IP,
-#             port=DB_PORT,
-#             database=DB_NAME
-#         )
-#     except mariadb.Error as ex:
-#         print(f"An error occurred while connecting to MariaDB: {ex}")
-#         return None
-#     cur = con.cursor()
-#     cur.execute("SELECT id FROM user WHERE login=?;", (login,))
-#     userId = cur.fetchone()[0]
-#     cur.execute("INSERT INTO user_log(user_id, action_id) VALUES (?, ?);", (userId, actionId))
-#     con.commit()
-#     con.close()
-
-
 def emergency_stop(tank_id: int, login):
     try:
         con = mariadb.connect(

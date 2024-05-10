@@ -1,6 +1,4 @@
 import json
-from asyncio import sleep
-
 import uvicorn
 from fastapi import FastAPI, WebSocket
 from fastapi.responses import Response, JSONResponse
@@ -52,7 +50,6 @@ async def get_tank_info(websocket: WebSocket):
             data = {"tank_id": tank_id} | tank_state | eq_data
             json_data = json.dumps(data, indent=4)
             await websocket.send_text(json_data)
-            await sleep(0.5)
     except WebSocketDisconnect:
         print(f"Websocket on {websocket.base_url.hostname} disconnected")
 
